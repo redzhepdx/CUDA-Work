@@ -74,20 +74,17 @@ int main()
     
   initVectorGpu<<<numberOfBlocks,threadsPerBlock>>>(b, 4, N);
   checkCuda(cudaGetLastError());
-    
-  checkCuda(cudaDeviceSynchronize());    
-  initVectorGpu<<<numberOfBlocks,threadsPerBlock>>>(c, 0, N);
-    
+  checkCuda(cudaDeviceSynchronize());
+  
+  initVectorGpu<<<numberOfBlocks,threadsPerBlock>>>(c, 0, N);  
   checkCuda(cudaGetLastError());
   checkCuda(cudaDeviceSynchronize());  
   
   addVectorsGpu<<<numberOfBlocks, threadsPerBlock>>>(c, a, b, N);
   
   checkCuda(cudaGetLastError());
-
   checkCuda(cudaDeviceSynchronize());
   checkElementsAre(7, c, N);
-
     
   checkCuda( cudaFree(a) );
   checkCuda( cudaFree(b) );
