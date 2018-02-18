@@ -86,7 +86,6 @@ int main()
   checkCuda(cudaGetLastError());
 
   checkCuda(cudaDeviceSynchronize());
-  printf("\nErrorCheck\n");
   checkElementsAre(7, c, N);
 
     
