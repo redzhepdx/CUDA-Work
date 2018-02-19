@@ -36,7 +36,11 @@ void initMatrices(int *a, int *b, int *c){
     int stride_x = blockDim.x * gridDim.x;
     int stride_y = blockDim.y * gridDim.y;
 
-    for(int i = idx; i < N; i)
+    for(int i = idx; i < N; i+=stride_x){
+      a[idx] = idx;
+      b[idx] = idx + 2;
+      c[idx] = 0;
+    }
     
 }
 
