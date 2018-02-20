@@ -12,9 +12,11 @@ int main()
   int computeCapabilityMinor = props.minor;
   int multiProcessorCount    = props.multiProcessorCount;
   int warpSize               = props.warpSize;
-  std::cout << "Device ID : " << deviceId << "\nNumber of SMs : " << multiProcessorCount 
-            << "\nCompute Capability Major : " << computeCapabilityMajor << "\nCompute Capability Minor : " 
-            << computeCapabilityMinor << "\n Warp Size : " << warpSize << std::endl;
+  std::cout << "Device ID : " << deviceId
+            << "\nNumber of SMs : " << multiProcessorCount 
+            << "\nCompute Capability Major : " << computeCapabilityMajor 
+            << "\nCompute Capability Minor : " << computeCapabilityMinor 
+            << "\n Warp Size : " << warpSize << std::endl;
             
   return 0;
 }
