@@ -52,11 +52,17 @@ int main()
   cudaMallocManaged(&a, size);
   cudaMallocManaged(&b, size);
   cudaMallocManaged(&c, size);
-
+  
+  //Avoid From CPU Page Faults
+  cudaMemPrefetchAsync(a, size, cudaCpuDeviceId);
+  cudaMemPrefetchAsync(b, size, cudaCpuDeviceId);
+  cudaMemPrefetchAsync(c, size, cudaCpuDeviceId);
+  
   initWith(3, a, N);
   initWith(4, b, N);
   initWith(0, c, N);
-    
+  
+  //Avoid From GPU Page Faults
   cudaMemPrefetchAsync(a, size, deviceId);
   cudaMemPrefetchAsync(b, size, deviceId);
   cudaMemPrefetchAsync(c, size, deviceId);
