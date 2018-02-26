@@ -1,4 +1,6 @@
-/*Heat Conduction Computation Exercise From nvidia.qwiklab.com Optimized Version!!!*/
+/*Heat Conduction Computation Exercise From nvidia.qwiklab.com Optimized Version!!!
+https://medium.com/@lucidlearning314/general-heat-conduction-equation-cartesian-coordinates-9be71b546b76
+*/
 
 #include <stdio.h>
 #include <math.h>
