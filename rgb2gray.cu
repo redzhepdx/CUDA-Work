@@ -32,7 +32,7 @@ int main( int argc, char** argv ){
 	checkCuda(cudaMallocManaged(&b_ch, ch_size));
 	checkCuda(cudaMallocManaged(&res, ch_size));
 
-    splitImage2Channels(img, r_ch, g_ch, b_ch);
+    	splitImage2Channels(img, r_ch, g_ch, b_ch);
 
 	rgb2GrayTransform<<<block_count, thread_count>>>(res, r_ch, g_ch, b_ch, rows, cols);
 
