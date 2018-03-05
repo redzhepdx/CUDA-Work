@@ -100,8 +100,8 @@ int main(){
 	checkCuda(cudaMallocManaged(&g_ch, ch_size));
 	checkCuda(cudaMallocManaged(&b_ch, ch_size));
 	checkCuda(cudaMallocManaged(&res_r, ch_size));
-    checkCuda(cudaMallocManaged(&res_g, ch_size));
-    checkCuda(cudaMallocManaged(&res_b, ch_size));
+   	checkCuda(cudaMallocManaged(&res_g, ch_size));
+    	checkCuda(cudaMallocManaged(&res_b, ch_size));
 	
 	//codeFlowControl("Debug_1");
 	splitImage2Channels(img, r_ch, g_ch, b_ch);
