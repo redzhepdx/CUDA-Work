@@ -39,4 +39,14 @@ inline void vector2Image(uchar *res, cv::Mat &img, int rows, int cols){
     }
 }
 
+inline void vector2ImageRGB(uchar *r, uchar *g, uchar *b, cv::Mat &img, int rows, int cols){
+	for(int row = 0; row < rows; row++){
+        for(int col = 0; col < cols; col++){
+            img.at<cv::Vec3b>(row, col)[2] = r[row * cols + col];
+			img.at<cv::Vec3b>(row, col)[1] = g[row * cols + col];
+			img.at<cv::Vec3b>(row, col)[0] = b[row * cols + col];
+        }
+    }
+}
+
 #endif
