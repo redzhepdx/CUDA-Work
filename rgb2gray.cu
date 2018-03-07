@@ -15,7 +15,7 @@ int main( int argc, char** argv ){
 
 	uchar *r_ch, *g_ch, *b_ch, *res;
 
-	std::string image_name = "test.jpg";
+	std::string image_name = "images/test.jpg";
 	cv::Mat img 		   = cv::imread(image_name);
 	int rows               = img.rows;
 	int cols			   = img.cols;
@@ -32,7 +32,7 @@ int main( int argc, char** argv ){
 	checkCuda(cudaMallocManaged(&b_ch, ch_size));
 	checkCuda(cudaMallocManaged(&res, ch_size));
 
-    	splitImage2Channels(img, r_ch, g_ch, b_ch);
+    splitImage2Channels(img, r_ch, g_ch, b_ch);
 
 	rgb2GrayTransform<<<block_count, thread_count>>>(res, r_ch, g_ch, b_ch, rows, cols);
 
