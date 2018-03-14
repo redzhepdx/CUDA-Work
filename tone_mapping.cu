@@ -95,11 +95,9 @@ void compute_histogram(double *input, int *bins ,
 					   double min, double range,
 					   int bin_count, size_t size){
 	int idx    = threadIdx.x + blockIdx.x * blockDim.x;
-	//int stride = blockDim.x * gridDim.x;
 	
 	if(idx < size){
 		int bin_index = (int)(((input[idx] - min) / range) * bin_count);
-		//printf("%d\n", bin_index);
 		atomicAdd(&(bins[bin_index]), 1);
 	}
 }
@@ -138,22 +136,21 @@ double reduce_minmax(double *input, size_t size, int minmax){
 	size_t curr_size    = size;
 	int numberOfThreads = BLOCK_SIZE;
 	int shared_mem_size = numberOfThreads * sizeof(double);
+	double res;	
 
 	checkCuda(cudaMallocManaged(&temp_ch, size * sizeof(double)));
-	temp_ch = input;
+	checkCuda(cudaMemcpy(temp_ch, input, size * sizeof(double), cudaMemcpyDeviceToDevice));
 
 	while(1){
        
 		checkCuda(cudaMallocManaged(&maxLum, curr_size * sizeof(double)));	
 		int numberOfBlocks  = getMaxSize(curr_size, BLOCK_SIZE);
-		std::cout << "BLock Count : " << numberOfBlocks << " size : " << curr_size << std::endl;
-		//codeFlowControl(std::to_string(numberOfBlocks));
 			
 		find_min_max_gpu <<< numberOfBlocks, numberOfThreads, shared_mem_size >>> (temp_ch, maxLum, curr_size, minmax);
 		checkCuda(cudaGetLastError());
 		checkCuda(cudaDeviceSynchronize());
 
-		codeFlowControl("Debug Loop");
+		//codeFlowControl("Debug Loop");
 		
 		//Free Memory
 		checkCuda(cudaFree(temp_ch));
@@ -168,14 +165,15 @@ double reduce_minmax(double *input, size_t size, int minmax){
 		curr_size = getMaxSize(curr_size, BLOCK_SIZE);
     }
 
-	double res = maxLum[0];
+	res = maxLum[0];
+
 	checkCuda(cudaFree(maxLum));
+
 	return res;
 }
 
 
 void apply_tone_mapping(){
-	uchar *r_ch, *g_ch, *b_ch;
 
     double *y_ch, *u_ch, *v_ch;
 	int *bins, *d_cdf;
@@ -191,7 +189,6 @@ void apply_tone_mapping(){
 	int bin_count          = 256;
 	int bin_size           = bin_count * sizeof(int);
 	size_t size            = rows * cols;
-	size_t ch_size_rgb     = size * sizeof(uchar);
 	size_t ch_size_yuv     = size * sizeof(double);
 
 	/************THREAD BLOCK SIZE CONFIGURATION***************/
@@ -203,9 +200,6 @@ void apply_tone_mapping(){
 	dim3 block_count(numberOfRowBlocks, numberOfColBlocks);
 	
 	/****************MEMORY CONVERSION PART*******************/
-	checkCuda(cudaMallocManaged(&r_ch, ch_size_rgb));
-	checkCuda(cudaMallocManaged(&g_ch, ch_size_rgb));
-	checkCuda(cudaMallocManaged(&b_ch, ch_size_rgb));
 	checkCuda(cudaMallocManaged(&y_ch, ch_size_yuv));
 	checkCuda(cudaMallocManaged(&u_ch, ch_size_yuv));
 	checkCuda(cudaMallocManaged(&v_ch, ch_size_yuv));
@@ -219,18 +213,18 @@ void apply_tone_mapping(){
 	splitImage2ChannelsDouble(yuv, v_ch, u_ch, y_ch);
 
 	/********************MIN_MAX_REDUCE*********************/
-	//TODO Contains Bug , CPU version for Now
-	//double max = reduce_minmax(y_ch, size, 1);
-	//double min = reduce_minmax(y_ch, size, 0);
+	//It Works With CudaMemcpyDevice2Device
+	double max = reduce_minmax(y_ch, size, 1);
+	double min = reduce_minmax(y_ch, size, 0);
+	//checkCuda(cudaDeviceSynchronize());
+	//checkCuda(cudaGetLastError());
 	/*******************************************************/
-
-	double min, max;
-	find_max_min_cpu(y_ch, max, min, size);
-	
+		
 	double range = max - min;
-
-	std::cout << "MAX : " << max << "MIN : " << min << std::endl;
-	fillVector(bins, 0, bin_size);	
+	
+	std::cout << "MAX : " << max << " MIN : " << min << std::endl;
+	
+	fillVector(bins, 0, bin_count);
 
 	compute_histogram <<< numberOfBlocks, numberOfThreads >>> (y_ch, bins, min, range, bin_count, size);
 	checkCuda(cudaGetLastError());
@@ -253,7 +247,7 @@ void apply_tone_mapping(){
 		std::cout << "CDF_" << i << " : " << bins[i] << std::endl;
 	}
 	*/
-
+	
 	cdf_to_image<<< numberOfBlocks, numberOfThreads >>>	(y_ch, bins, size);
 	checkCuda(cudaGetLastError());
 	checkCuda(cudaDeviceSynchronize());
@@ -267,9 +261,6 @@ void apply_tone_mapping(){
 	cv::cvtColor(res_yuv, res_yuv, CV_YUV2BGR);
 	cv::imwrite("tone_map.jpg", res_yuv);
 
-	checkCuda(cudaFree(r_ch));
-	checkCuda(cudaFree(g_ch));
-	checkCuda(cudaFree(b_ch));
 	checkCuda(cudaFree(y_ch));
 	checkCuda(cudaFree(u_ch));
 	checkCuda(cudaFree(v_ch));
